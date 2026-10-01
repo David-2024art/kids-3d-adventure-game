@@ -25,6 +25,7 @@ scene.add(new THREE.HemisphereLight(0xfff7d6, 0x3d7a36, 1.3));
 const sun = new THREE.DirectionalLight(0xfff0b5, 1.8);
 sun.position.set(8, 18, 6);
 sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
 scene.add(sun);
 
 const ground = new THREE.Mesh(
@@ -68,38 +69,92 @@ for (let i = 0; i < 18; i += 1) {
   if (Math.abs(x) > 8 || Math.abs(z) > 8) addTree(x, z, 0.7 + Math.random() * 0.8);
 }
 
+function material(color, options = {}) {
+  return new THREE.MeshStandardMaterial({ color, roughness: 0.75, ...options });
+}
+
+function addPart(group, geometry, partMaterial, position, options = {}) {
+  const mesh = new THREE.Mesh(geometry, partMaterial);
+  mesh.position.set(...position);
+  if (options.rotation) mesh.rotation.set(...options.rotation);
+  if (options.scale) mesh.scale.set(...options.scale);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  return mesh;
+}
+
+// 卡通小勇者：头发、耳朵、眼睛、鼻子、身体、手臂、腿、靴子和披风。
 const player = new THREE.Group();
-const body = new THREE.Mesh(
-  new THREE.SphereGeometry(0.8, 20, 20),
-  new THREE.MeshStandardMaterial({ color: 0xffc7a6 })
-);
-body.position.y = 1.15;
-body.castShadow = true;
-player.add(body);
+const character = new THREE.Group();
+player.add(character);
 
-const head = new THREE.Mesh(
-  new THREE.SphereGeometry(0.55, 20, 20),
-  new THREE.MeshStandardMaterial({ color: 0xffd8b8 })
-);
-head.position.y = 2.1;
-head.castShadow = true;
-player.add(head);
+const skin = material(0xffc7a6);
+const skinLight = material(0xffd8b8);
+const hair = material(0x5a342c);
+const shirt = material(0x4f83ff);
+const shirtLight = material(0x6fa8ff);
+const trousers = material(0x284b9b);
+const boot = material(0x613d2f);
+const capeMaterial = material(0xff5f9e, { emissive: 0xff2e82, emissiveIntensity: 0.15, side: THREE.DoubleSide });
+const hatMaterial = material(0x7d5cff, { emissive: 0x4c36d1, emissiveIntensity: 0.2 });
+const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x24304f, roughness: 0.35 });
+const eyeSparkle = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-const hat = new THREE.Mesh(
-  new THREE.ConeGeometry(0.55, 0.8, 16),
-  new THREE.MeshStandardMaterial({ color: 0x7d5cff, emissive: 0x4c36d1, emissiveIntensity: 0.2 })
-);
-hat.position.y = 2.8;
-hat.castShadow = true;
-player.add(hat);
+const legs = new THREE.Group();
+const leftLeg = new THREE.Group();
+const rightLeg = new THREE.Group();
+leftLeg.position.set(-0.28, 0.85, 0);
+rightLeg.position.set(0.28, 0.85, 0);
+addPart(leftLeg, new THREE.CapsuleGeometry(0.22, 0.62, 5, 10), trousers, [0, -0.22, 0]);
+addPart(rightLeg, new THREE.CapsuleGeometry(0.22, 0.62, 5, 10), trousers, [0, -0.22, 0]);
+addPart(leftLeg, new THREE.SphereGeometry(0.26, 14, 10), boot, [0, -0.68, -0.12], { scale: [1, 0.65, 1.35] });
+addPart(rightLeg, new THREE.SphereGeometry(0.26, 14, 10), boot, [0, -0.68, -0.12], { scale: [1, 0.65, 1.35] });
+legs.add(leftLeg, rightLeg);
+character.add(legs);
 
-const cape = new THREE.Mesh(
-  new THREE.BoxGeometry(0.9, 1.5, 0.15),
-  new THREE.MeshStandardMaterial({ color: 0xff7ab6 })
-);
-cape.position.set(0, 1.1, 0.7);
-cape.rotation.x = 0.2;
-player.add(cape);
+const torso = new THREE.Group();
+addPart(torso, new THREE.CapsuleGeometry(0.55, 0.72, 8, 16), shirt, [0, 1.45, 0], { scale: [1, 1.05, 0.85] });
+addPart(torso, new THREE.TorusGeometry(0.48, 0.055, 8, 24), shirtLight, [0, 1.5, 0], { rotation: [Math.PI / 2, 0, 0] });
+character.add(torso);
+
+const leftArm = new THREE.Group();
+const rightArm = new THREE.Group();
+leftArm.position.set(-0.62, 1.65, 0);
+rightArm.position.set(0.62, 1.65, 0);
+addPart(leftArm, new THREE.CapsuleGeometry(0.16, 0.55, 5, 8), shirt, [0, -0.28, 0]);
+addPart(rightArm, new THREE.CapsuleGeometry(0.16, 0.55, 5, 8), shirt, [0, -0.28, 0]);
+addPart(leftArm, new THREE.SphereGeometry(0.19, 14, 10), skin, [0, -0.7, 0]);
+addPart(rightArm, new THREE.SphereGeometry(0.19, 14, 10), skin, [0, -0.7, 0]);
+character.add(leftArm, rightArm);
+
+const head = new THREE.Group();
+addPart(head, new THREE.SphereGeometry(0.62, 24, 20), skinLight, [0, 2.55, 0]);
+addPart(head, new THREE.SphereGeometry(0.64, 20, 16), hair, [0, 2.83, 0.02], { scale: [1, 0.5, 0.95] });
+addPart(head, new THREE.SphereGeometry(0.16, 14, 10), hair, [-0.5, 2.65, 0]);
+addPart(head, new THREE.SphereGeometry(0.16, 14, 10), hair, [0.5, 2.65, 0]);
+
+const leftEye = addPart(head, new THREE.SphereGeometry(0.095, 12, 10), eyeMaterial, [-0.22, 2.58, -0.56]);
+const rightEye = addPart(head, new THREE.SphereGeometry(0.095, 12, 10), eyeMaterial, [0.22, 2.58, -0.56]);
+addPart(head, new THREE.SphereGeometry(0.032, 8, 8), eyeSparkle, [-0.19, 2.61, -0.64]);
+addPart(head, new THREE.SphereGeometry(0.032, 8, 8), eyeSparkle, [0.25, 2.61, -0.64]);
+addPart(head, new THREE.SphereGeometry(0.08, 10, 8), skin, [0, 2.43, -0.61], { scale: [0.8, 0.7, 0.55] });
+addPart(head, new THREE.TorusGeometry(0.17, 0.025, 8, 16, Math.PI), skin, [0, 2.28, -0.59], { rotation: [Math.PI, 0, 0] });
+character.add(head);
+
+const hat = new THREE.Group();
+addPart(hat, new THREE.CylinderGeometry(0.72, 0.72, 0.08, 20), hatMaterial, [0, 3.18, 0]);
+addPart(hat, new THREE.ConeGeometry(0.5, 0.85, 20), hatMaterial, [0, 3.62, 0]);
+addPart(hat, new THREE.TorusGeometry(0.42, 0.045, 8, 20), material(0xffdb68, { emissive: 0xffb929, emissiveIntensity: 0.3 }), [0, 3.48, 0]);
+character.add(hat);
+
+const cape = addPart(character, new THREE.PlaneGeometry(1.25, 1.75, 5, 5), capeMaterial, [0, 1.65, 0.52], { rotation: [0.13, Math.PI, 0] });
+cape.userData.baseY = 1.65;
+
+// 方向标记，让玩家能明显看出角色的正面（正面朝 -Z）。
+addPart(character, new THREE.SphereGeometry(0.06, 8, 8), material(0xfff0a8, { emissive: 0xffc400, emissiveIntensity: 0.8 }), [0, 1.55, -0.48]);
+
+player.position.set(0, 0, 0);
 scene.add(player);
 
 const crystals = [];
@@ -108,11 +163,7 @@ const hazards = [];
 function addCrystal(x, z) {
   const crystal = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.45),
-    new THREE.MeshStandardMaterial({
-      color: 0x88f0ff,
-      emissive: 0x4bd7ff,
-      emissiveIntensity: 1.2,
-    })
+    new THREE.MeshStandardMaterial({ color: 0x88f0ff, emissive: 0x4bd7ff, emissiveIntensity: 1.2 })
   );
   crystal.position.set(x, 1.2, z);
   crystal.castShadow = true;
@@ -142,7 +193,6 @@ const hazardPositions = [
 
 const game = { running: false, score: 0, timeLeft: 60, totalCrystals: 8 };
 const keys = Object.create(null);
-
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
@@ -150,12 +200,8 @@ window.addEventListener('keydown', (event) => {
     keys[key] = true;
   }
 });
-window.addEventListener('keyup', (event) => {
-  keys[event.key.toLowerCase()] = false;
-});
-window.addEventListener('blur', () => {
-  Object.keys(keys).forEach((key) => { keys[key] = false; });
-});
+window.addEventListener('keyup', (event) => { keys[event.key.toLowerCase()] = false; });
+window.addEventListener('blur', () => { Object.keys(keys).forEach((key) => { keys[key] = false; }); });
 
 function updateHud() {
   scoreEl.textContent = String(game.score);
@@ -187,9 +233,7 @@ function startGame() {
 function finishGame(success) {
   game.running = false;
   overlay.querySelector('h1').textContent = success ? '🌟 成功啦！' : '⏰ 时间到啦！';
-  overlay.querySelector('p').textContent = success
-    ? '你收集到了所有星光水晶！'
-    : '再试一次吧，继续探索魔法森林！';
+  overlay.querySelector('p').textContent = success ? '你收集到了所有星光水晶！' : '再试一次吧，继续探索魔法森林！';
   overlay.querySelector('ul').innerHTML = `<li>分数：${game.score}/${game.totalCrystals}</li><li>使用 WASD 或方向键移动</li>`;
   startButton.textContent = '再玩一次';
   overlay.classList.remove('hidden');
@@ -199,15 +243,13 @@ function finishGame(success) {
 startButton.addEventListener('click', startGame);
 
 function updateMovement(delta) {
-  // 固定的第三人称视角：屏幕上方就是世界的 -Z 方向。
-  // 因此 W/↑ 向屏幕上方，S/↓ 向下，A/← 向左，D/→ 向右。
   let x = 0;
   let z = 0;
   if (keys.w || keys.arrowup) z -= 1;
   if (keys.s || keys.arrowdown) z += 1;
   if (keys.a || keys.arrowleft) x -= 1;
   if (keys.d || keys.arrowright) x += 1;
-  if (x === 0 && z === 0) return;
+  if (x === 0 && z === 0) return false;
 
   const length = Math.hypot(x, z);
   x /= length;
@@ -215,20 +257,25 @@ function updateMovement(delta) {
   const speed = 8;
   player.position.x = THREE.MathUtils.clamp(player.position.x + x * speed * delta, -11.5, 11.5);
   player.position.z = THREE.MathUtils.clamp(player.position.z + z * speed * delta, -11.5, 11.5);
-
-  // 角色的正面是 -Z，旋转角度与移动方向一致。
   player.rotation.y = Math.atan2(x, -z);
+  return true;
 }
 
 function updateCamera() {
-  // 不再根据角色旋转移动相机，避免按键方向和相机方向互相干扰。
-  const targetX = player.position.x;
-  const targetY = 7;
-  const targetZ = player.position.z + 12;
-  camera.position.x += (targetX - camera.position.x) * 0.12;
-  camera.position.y += (targetY - camera.position.y) * 0.12;
-  camera.position.z += (targetZ - camera.position.z) * 0.12;
-  camera.lookAt(player.position.x, 1.2, player.position.z);
+  const target = new THREE.Vector3(player.position.x, 1.2, player.position.z);
+  const desired = new THREE.Vector3(player.position.x, 7, player.position.z + 12);
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(target);
+}
+
+function animateCharacter(elapsed, moving) {
+  const walk = moving ? Math.sin(elapsed * 12) : 0;
+  leftLeg.rotation.x = walk * 0.45;
+  rightLeg.rotation.x = -walk * 0.45;
+  leftArm.rotation.x = -walk * 0.35;
+  rightArm.rotation.x = walk * 0.35;
+  character.position.y = moving ? Math.abs(Math.sin(elapsed * 12)) * 0.035 : Math.sin(elapsed * 2) * 0.015;
+  cape.rotation.x = 0.13 + (moving ? Math.sin(elapsed * 10) * 0.08 : 0);
 }
 
 function updateObjects(delta, elapsed) {
@@ -259,6 +306,7 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   const elapsed = clock.elapsedTime;
+  let moving = false;
 
   if (game.running) {
     game.timeLeft -= delta;
@@ -266,7 +314,7 @@ function animate() {
       game.timeLeft = 0;
       finishGame(false);
     } else {
-      updateMovement(delta);
+      moving = updateMovement(delta);
       updateCamera();
       updateObjects(delta, elapsed);
       updateHud();
@@ -276,6 +324,7 @@ function animate() {
     camera.lookAt(0, 1.5, 0);
   }
 
+  animateCharacter(elapsed, moving);
   renderer.render(scene, camera);
 }
 
