@@ -19,6 +19,9 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.domElement.tabIndex = 0;
+renderer.domElement.style.outline = 'none';
+renderer.domElement.addEventListener('pointerdown', () => renderer.domElement.focus());
 document.body.appendChild(renderer.domElement);
 
 const ambientLight = new THREE.HemisphereLight(0xfff7d6, 0x3d7a36, 1.3);
@@ -38,11 +41,24 @@ sunLight.shadow.camera.bottom = -25;
 scene.add(sunLight);
 
 const keys = {};
-window.addEventListener('keydown', (event) => {
+
+function handleKeyDown(event) {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) {
+    event.preventDefault();
+  }
   keys[event.code] = true;
-});
-window.addEventListener('keyup', (event) => {
+}
+
+function handleKeyUp(event) {
   keys[event.code] = false;
+}
+
+window.addEventListener('keydown', handleKeyDown);
+window.addEventListener('keyup', handleKeyUp);
+window.addEventListener('blur', () => {
+  Object.keys(keys).forEach((key) => {
+    keys[key] = false;
+  });
 });
 
 const ground = new THREE.Mesh(
@@ -367,6 +383,7 @@ function startGame() {
   updateHud();
   overlay.classList.add('hidden');
   hud.classList.remove('hidden');
+  renderer.domElement.focus();
 }
 
 function finishGame(success) {
@@ -474,8 +491,9 @@ function updateClouds(elapsed) {
 
 function animate() {
   requestAnimationFrame(animate);
-  const elapsed = clock.getElapsedTime();
+
   const delta = clock.getDelta();
+  const elapsed = clock.elapsedTime;
 
   updateClouds(elapsed);
 
