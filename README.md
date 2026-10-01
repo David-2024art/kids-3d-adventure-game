@@ -1,2 +1,33 @@
-# kids-3d-adventure-game
-A colorful 3D web game designed for elementary students with a magical world and simple gameplay
+# 魔法森林探险
+
+这是一个适合小学6年级孩子的 3D 网页游戏，主题为“魔法森林探险”。
+
+## 游戏特点
+- 3D 场景：彩色森林、云朵、石头、树木和水晶
+- 简单操作：WASD / 方向键控制移动
+- 适龄设计：上手容易，画面愉快，有趣
+- 目标明确：在 60 秒内收集 8 个闪光水晶
+- 反馈丰富：计分、时间、成功/失败提示
+
+## 运行方法
+在项目根目录执行：
+
+```bash
+python3 -m http.server 8000
+```
+
+然后在浏览器访问：
+
+```text
+http://localhost:8000
+```
+
+## 说明
+这个游戏使用了 Three.js 的 CDN 版本，所以无需安装额外依赖。
+
+如果你需要，我还可以继续扩展：
+- 增加更多关卡
+- 添加音效和背景音乐
+- 增加角色动画和跳跃
+- 改成海底/太空/城堡主题
+- 做成儿童教育型知识答题小游戏
