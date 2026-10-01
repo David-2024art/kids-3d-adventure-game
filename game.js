@@ -52,6 +52,7 @@ function addTree(x, z, scale = 1) {
   trunk.position.y = 1.15 * scale;
   trunk.castShadow = true;
   tree.add(trunk);
+
   const leaves = new THREE.Mesh(
     new THREE.SphereGeometry(1.45 * scale, 18, 16),
     new THREE.MeshStandardMaterial({ color: 0x3caa5c })
@@ -84,75 +85,78 @@ function addPart(group, geometry, partMaterial, position, options = {}) {
   return mesh;
 }
 
-// 卡通小勇者：头发、耳朵、眼睛、鼻子、身体、手臂、腿、靴子和披风。
 const player = new THREE.Group();
 const character = new THREE.Group();
 player.add(character);
 
 const skin = material(0xffc7a6);
 const skinLight = material(0xffd8b8);
-const hair = material(0x5a342c);
+const hair = material(0x4b2a22);
 const shirt = material(0x4f83ff);
 const shirtLight = material(0x6fa8ff);
-const trousers = material(0x284b9b);
-const boot = material(0x613d2f);
-const capeMaterial = material(0xff5f9e, { emissive: 0xff2e82, emissiveIntensity: 0.15, side: THREE.DoubleSide });
-const hatMaterial = material(0x7d5cff, { emissive: 0x4c36d1, emissiveIntensity: 0.2 });
+const trousers = material(0x1f4faa);
+const boot = material(0x5a3d2d);
+const capeMaterial = material(0xff5aa5, { emissive: 0xff2d82, emissiveIntensity: 0.15, side: THREE.DoubleSide });
 const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x24304f, roughness: 0.35 });
 const eyeSparkle = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-const legs = new THREE.Group();
-const leftLeg = new THREE.Group();
-const rightLeg = new THREE.Group();
-leftLeg.position.set(-0.28, 0.85, 0);
-rightLeg.position.set(0.28, 0.85, 0);
-addPart(leftLeg, new THREE.CapsuleGeometry(0.22, 0.62, 5, 10), trousers, [0, -0.22, 0]);
-addPart(rightLeg, new THREE.CapsuleGeometry(0.22, 0.62, 5, 10), trousers, [0, -0.22, 0]);
-addPart(leftLeg, new THREE.SphereGeometry(0.26, 14, 10), boot, [0, -0.68, -0.12], { scale: [1, 0.65, 1.35] });
-addPart(rightLeg, new THREE.SphereGeometry(0.26, 14, 10), boot, [0, -0.68, -0.12], { scale: [1, 0.65, 1.35] });
-legs.add(leftLeg, rightLeg);
-character.add(legs);
+const bodyRig = new THREE.Group();
+character.add(bodyRig);
 
 const torso = new THREE.Group();
-addPart(torso, new THREE.CapsuleGeometry(0.55, 0.72, 8, 16), shirt, [0, 1.45, 0], { scale: [1, 1.05, 0.85] });
-addPart(torso, new THREE.TorusGeometry(0.48, 0.055, 8, 24), shirtLight, [0, 1.5, 0], { rotation: [Math.PI / 2, 0, 0] });
-character.add(torso);
+addPart(torso, new THREE.CapsuleGeometry(0.62, 0.8, 8, 20), shirt, [0, 1.5, 0]);
+addPart(torso, new THREE.TorusGeometry(0.48, 0.055, 10, 24), shirtLight, [0, 1.6, 0], { rotation: [Math.PI / 2, 0, 0] });
+bodyRig.add(torso);
+
+const shoulderLeft = addPart(torso, new THREE.SphereGeometry(0.24, 18, 18), shirt, [-0.62, 1.94, 0]);
+const shoulderRight = addPart(torso, new THREE.SphereGeometry(0.24, 18, 18), shirt, [0.62, 1.94, 0]);
 
 const leftArm = new THREE.Group();
 const rightArm = new THREE.Group();
-leftArm.position.set(-0.62, 1.65, 0);
-rightArm.position.set(0.62, 1.65, 0);
-addPart(leftArm, new THREE.CapsuleGeometry(0.16, 0.55, 5, 8), shirt, [0, -0.28, 0]);
-addPart(rightArm, new THREE.CapsuleGeometry(0.16, 0.55, 5, 8), shirt, [0, -0.28, 0]);
-addPart(leftArm, new THREE.SphereGeometry(0.19, 14, 10), skin, [0, -0.7, 0]);
-addPart(rightArm, new THREE.SphereGeometry(0.19, 14, 10), skin, [0, -0.7, 0]);
-character.add(leftArm, rightArm);
+leftArm.position.set(-0.78, 1.8, 0);
+rightArm.position.set(0.78, 1.8, 0);
+addPart(leftArm, new THREE.CapsuleGeometry(0.18, 0.62, 5, 12), shirt, [0, -0.18, 0]);
+addPart(rightArm, new THREE.CapsuleGeometry(0.18, 0.62, 5, 12), shirt, [0, -0.18, 0]);
+addPart(leftArm, new THREE.SphereGeometry(0.21, 18, 18), skin, [0, -0.66, 0]);
+addPart(rightArm, new THREE.SphereGeometry(0.21, 18, 18), skin, [0, -0.66, 0]);
+bodyRig.add(leftArm, rightArm);
+
+const hips = new THREE.Group();
+addPart(hips, new THREE.BoxGeometry(0.8, 0.42, 0.55), trousers, [0, 0.7, 0], { scale: [1.1, 1, 1] });
+bodyRig.add(hips);
+
+const leftLeg = new THREE.Group();
+const rightLeg = new THREE.Group();
+leftLeg.position.set(-0.28, 0.18, 0);
+rightLeg.position.set(0.28, 0.18, 0);
+addPart(leftLeg, new THREE.CapsuleGeometry(0.23, 0.7, 8, 14), trousers, [0, 0, 0]);
+addPart(rightLeg, new THREE.CapsuleGeometry(0.23, 0.7, 8, 14), trousers, [0, 0, 0]);
+addPart(leftLeg, new THREE.SphereGeometry(0.27, 16, 16), boot, [0, -0.8, 0.08], { scale: [1, 0.68, 1.5] });
+addPart(rightLeg, new THREE.SphereGeometry(0.27, 16, 16), boot, [0, -0.8, 0.08], { scale: [1, 0.68, 1.5] });
+bodyRig.add(leftLeg, rightLeg);
 
 const head = new THREE.Group();
-addPart(head, new THREE.SphereGeometry(0.62, 24, 20), skinLight, [0, 2.55, 0]);
-addPart(head, new THREE.SphereGeometry(0.64, 20, 16), hair, [0, 2.83, 0.02], { scale: [1, 0.5, 0.95] });
-addPart(head, new THREE.SphereGeometry(0.16, 14, 10), hair, [-0.5, 2.65, 0]);
-addPart(head, new THREE.SphereGeometry(0.16, 14, 10), hair, [0.5, 2.65, 0]);
-
-const leftEye = addPart(head, new THREE.SphereGeometry(0.095, 12, 10), eyeMaterial, [-0.22, 2.58, -0.56]);
-const rightEye = addPart(head, new THREE.SphereGeometry(0.095, 12, 10), eyeMaterial, [0.22, 2.58, -0.56]);
-addPart(head, new THREE.SphereGeometry(0.032, 8, 8), eyeSparkle, [-0.19, 2.61, -0.64]);
-addPart(head, new THREE.SphereGeometry(0.032, 8, 8), eyeSparkle, [0.25, 2.61, -0.64]);
-addPart(head, new THREE.SphereGeometry(0.08, 10, 8), skin, [0, 2.43, -0.61], { scale: [0.8, 0.7, 0.55] });
-addPart(head, new THREE.TorusGeometry(0.17, 0.025, 8, 16, Math.PI), skin, [0, 2.28, -0.59], { rotation: [Math.PI, 0, 0] });
-character.add(head);
+addPart(head, new THREE.SphereGeometry(0.7, 26, 22), skinLight, [0, 2.7, 0]);
+addPart(head, new THREE.SphereGeometry(0.64, 18, 16), hair, [0, 3.1, 0.02], { scale: [1, 0.62, 0.95] });
+addPart(head, new THREE.SphereGeometry(0.18, 16, 16), hair, [-0.45, 3.0, 0.05]);
+addPart(head, new THREE.SphereGeometry(0.18, 16, 16), hair, [0.45, 3.0, 0.05]);
+addPart(head, new THREE.SphereGeometry(0.08, 12, 12), eyeMaterial, [-0.2, 2.75, 0.55]);
+addPart(head, new THREE.SphereGeometry(0.08, 12, 12), eyeMaterial, [0.2, 2.75, 0.55]);
+addPart(head, new THREE.SphereGeometry(0.04, 10, 10), eyeSparkle, [-0.17, 2.8, 0.6]);
+addPart(head, new THREE.SphereGeometry(0.04, 10, 10), eyeSparkle, [0.23, 2.8, 0.6]);
+addPart(head, new THREE.SphereGeometry(0.09, 8, 8), skin, [0, 2.48, 0.6], { scale: [0.9, 0.8, 0.5] });
+addPart(head, new THREE.TorusGeometry(0.18, 0.028, 8, 20, Math.PI), skin, [0, 2.35, 0.58], { rotation: [Math.PI, 0, 0] });
+bodyRig.add(head);
 
 const hat = new THREE.Group();
-addPart(hat, new THREE.CylinderGeometry(0.72, 0.72, 0.08, 20), hatMaterial, [0, 3.18, 0]);
-addPart(hat, new THREE.ConeGeometry(0.5, 0.85, 20), hatMaterial, [0, 3.62, 0]);
-addPart(hat, new THREE.TorusGeometry(0.42, 0.045, 8, 20), material(0xffdb68, { emissive: 0xffb929, emissiveIntensity: 0.3 }), [0, 3.48, 0]);
-character.add(hat);
+addPart(hat, new THREE.CylinderGeometry(0.7, 0.7, 0.12, 24), material(0x7d5cff, { emissive: 0x4c36d1, emissiveIntensity: 0.2 }), [0, 3.55, 0]);
+addPart(hat, new THREE.ConeGeometry(0.56, 0.92, 20), material(0x7d5cff, { emissive: 0x4c36d1, emissiveIntensity: 0.2 }), [0, 4.05, 0]);
+bodyRig.add(hat);
 
-const cape = addPart(character, new THREE.PlaneGeometry(1.25, 1.75, 5, 5), capeMaterial, [0, 1.65, 0.52], { rotation: [0.13, Math.PI, 0] });
-cape.userData.baseY = 1.65;
+const cape = addPart(bodyRig, new THREE.PlaneGeometry(1.3, 1.9, 6, 6), capeMaterial, [0, 1.5, 0.7], { rotation: [0.22, Math.PI, 0] });
+cape.userData.baseY = 1.5;
 
-// 方向标记，让玩家能明显看出角色的正面（正面朝 -Z）。
-addPart(character, new THREE.SphereGeometry(0.06, 8, 8), material(0xfff0a8, { emissive: 0xffc400, emissiveIntensity: 0.8 }), [0, 1.55, -0.48]);
+const marker = addPart(character, new THREE.SphereGeometry(0.08, 10, 10), material(0xfff0a8, { emissive: 0xffc400, emissiveIntensity: 0.8 }), [0, 1.5, -0.55]);
 
 player.position.set(0, 0, 0);
 scene.add(player);
@@ -270,12 +274,14 @@ function updateCamera() {
 
 function animateCharacter(elapsed, moving) {
   const walk = moving ? Math.sin(elapsed * 12) : 0;
-  leftLeg.rotation.x = walk * 0.45;
-  rightLeg.rotation.x = -walk * 0.45;
-  leftArm.rotation.x = -walk * 0.35;
-  rightArm.rotation.x = walk * 0.35;
-  character.position.y = moving ? Math.abs(Math.sin(elapsed * 12)) * 0.035 : Math.sin(elapsed * 2) * 0.015;
-  cape.rotation.x = 0.13 + (moving ? Math.sin(elapsed * 10) * 0.08 : 0);
+  leftLeg.rotation.x = walk * 0.62;
+  rightLeg.rotation.x = -walk * 0.62;
+  leftArm.rotation.x = -walk * 0.5;
+  rightArm.rotation.x = walk * 0.5;
+  character.position.y = moving ? Math.abs(Math.sin(elapsed * 12)) * 0.03 : Math.sin(elapsed * 2) * 0.015;
+  cape.rotation.x = 0.22 + (moving ? Math.sin(elapsed * 10) * 0.08 : 0);
+  hat.rotation.z = Math.sin(elapsed * 2) * 0.05;
+  marker.position.y = 1.55 + Math.sin(elapsed * 4) * 0.07;
 }
 
 function updateObjects(delta, elapsed) {
