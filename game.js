@@ -419,23 +419,40 @@ startButton.addEventListener('click', () => {
 });
 
 function updatePlayer(delta) {
-  const move = new THREE.Vector3();
+  const speed = 8.0;
+  let moved = false;
 
-  if (keys.KeyW || keys.ArrowUp) move.z -= 1;
-  if (keys.KeyS || keys.ArrowDown) move.z += 1;
-  if (keys.KeyA || keys.ArrowLeft) move.x -= 1;
-  if (keys.KeyD || keys.ArrowRight) move.x += 1;
+  // 按键检测和移动（直接在世界坐标系中移动）
+  if (keys.KeyW || keys.ArrowUp) {
+    player.position.z -= speed * delta;
+    moved = true;
+  }
+  if (keys.KeyS || keys.ArrowDown) {
+    player.position.z += speed * delta;
+    moved = true;
+  }
+  if (keys.KeyA || keys.ArrowLeft) {
+    player.position.x -= speed * delta;
+    moved = true;
+  }
+  if (keys.KeyD || keys.ArrowRight) {
+    player.position.x += speed * delta;
+    moved = true;
+  }
 
-  if (move.lengthSq() > 0) {
-    move.normalize();
-    const speed = 6.2;
-    player.position.x += move.x * speed * delta;
-    player.position.z += move.z * speed * delta;
-    player.position.x = THREE.MathUtils.clamp(player.position.x, -11.5, 11.5);
-    player.position.z = THREE.MathUtils.clamp(player.position.z, -11.5, 11.5);
+  // 边界限制
+  player.position.x = THREE.MathUtils.clamp(player.position.x, -11.5, 11.5);
+  player.position.z = THREE.MathUtils.clamp(player.position.z, -11.5, 11.5);
 
-    const facing = Math.atan2(move.x, move.z);
-    player.rotation.y = facing;
+  // 更新方向朝向
+  if (keys.KeyW || keys.ArrowUp) {
+    player.rotation.y = 0;
+  } else if (keys.KeyS || keys.ArrowDown) {
+    player.rotation.y = Math.PI;
+  } else if (keys.KeyA || keys.ArrowLeft) {
+    player.rotation.y = Math.PI / 2;
+  } else if (keys.KeyD || keys.ArrowRight) {
+    player.rotation.y = -Math.PI / 2;
   }
 }
 
@@ -489,6 +506,8 @@ function updateClouds(elapsed) {
   });
 }
 
+const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -522,7 +541,6 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-const clock = new THREE.Clock();
 updateHud();
 animate();
 
